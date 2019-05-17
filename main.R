@@ -14,7 +14,7 @@ theme_set(theme_classic()) + theme_replace(
 
 N <-10000   #number of cells
 alpha <- 0.1 #efficiency of the drive: proportion of resistant virus created
-Simul <- 50   #number of simulation to be run in parralele
+Simul <- 50   #number of simulation to be run in parralel
 numGen <- 50  #number of generation
 f <-0.9        #fitness cost of gene drive viruses
 startfreq <- 0.1 #starting proportion of gene drive viruses
@@ -22,17 +22,17 @@ MOI=1
 
 #Main gene drive function. All the other function are just to plot/make many simulations
 GeneDrive <- function(N,numGen,alpha,f,startfreq,MOI=1){
-
-  Percent <- matrix(c(1-startfreq,startfreq,0,0), ncol = 4, nrow = 1)
-  colnames(Percent)= c('WT','GD','GDo','R')
-  VirusNb <- matrix(0, ncol = 4, nrow = 1)
+  #  start_time <- Sys.time()
+  Percent <- matrix(c(1-startfreq,startfreq,0,0), ncol = 4, nrow = 1) #at each generation, percent give the percentage of the different viruses in the viral population
+  colnames(Percent)= c('WT','GD','GDo','R') #4 different virus type
+  VirusNb <- matrix(0, ncol = 4, nrow = 1) #virus Nb give the actual number of viruses
   colnames(VirusNb)= c('WT','GD','GDo','R')
   
-  #each row represent a cell, which can be infected by a number of the different viruses
+  #each row represent a cell, which can be infected by a number of the different viruses.
   Cells_empty<- matrix(0, ncol = 4, nrow = N)
   colnames(Cells_empty)= c('WT','GD','GDo','R')
   
-  InfectedCells <- Cells_empty
+  InfectedCells <- Cells_empty 
   
   for (gen in 0:(numGen-1)){
     
@@ -43,7 +43,7 @@ GeneDrive <- function(N,numGen,alpha,f,startfreq,MOI=1){
       Viruslist <- sample( colnames(Percent), MOI*N, replace=TRUE, prob=Percent[gen,] )
     }
     
-    #infect the N cells with the MOI*N virus, sending randomly each virus to a cell
+    #infect the N cells with the MOI*N virus, sending randomly each virus to one cell
     InfectedCells <- Cells_empty
     for (virus in 1:(MOI*N)) {
       ChooseCell  <- sample(1:N, 1)
@@ -94,6 +94,8 @@ GeneDrive <- function(N,numGen,alpha,f,startfreq,MOI=1){
     #print(Percent[gen+1,])
   }
   
+  #  end_time <- Sys.time()
+  #  print(end_time-start_time)
   return(VirusNb)
 }
 
