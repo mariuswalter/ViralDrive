@@ -12,63 +12,62 @@ theme_set(theme_classic()) + theme_replace(
   aspect.ratio=1,
   legend.position="none")        
 
-N <-10000   #number of cells
-alpha <- 0.1 #efficiency of the drive: proportion of resistant virus created
-Simul <- 50   #number of simulation to be run in parralel
-numGen <- 50  #number of generation
+N <-1000   #number of cells in a simulation
+alpha <- 0.1 #efficiency of the drive: proportion of resistant virus created when coinfecting with a WT and Drive virus
+Simul <- 50   #number of simulations to be run in parralel
+numGen <- 50  #number of viral generations in a simulation
 f <-0.9        #fitness cost of gene drive viruses
 startfreq <- 0.1 #starting proportion of gene drive viruses
 MOI=1
 
-#Main gene drive function. All the other function are just to plot/make many simulations
+#Main viral gene drive function. All the other functions are just to plot/run simulations in parallele
 GeneDrive <- function(N,numGen,alpha,f,startfreq,MOI=1){
   #  start_time <- Sys.time()
-  Percent <- matrix(c(1-startfreq,startfreq,0,0), ncol = 4, nrow = 1) #at each generation, percent give the percentage of the different viruses in the viral population
-  colnames(Percent)= c('WT','GD','GDo','R') #4 different virus type
-  VirusNb <- matrix(0, ncol = 4, nrow = 1) #virus Nb give the actual number of viruses
+  Percent <- matrix(c(1-startfreq,startfreq,0,0), ncol = 4, nrow = 1) #at each generation, Percent is a matrix that give the percentage of the different viruses in the viral population. It is initated with a starting population of WT and GD viruses
+  colnames(Percent)= c('WT','GD','GDo','R') #4 different virus types
+  VirusNb <- matrix(0, ncol = 4, nrow = 1) #virus Nb give the actual number of viruses.
   colnames(VirusNb)= c('WT','GD','GDo','R')
   
-  #each row represent a cell, which can be infected by a number of the different viruses.
+  #each row represent a cell, which can be infected and coinfected by the different viruses. Each column give the number of the different viruses infected a cell.
   Cells_empty<- matrix(0, ncol = 4, nrow = N)
   colnames(Cells_empty)= c('WT','GD','GDo','R')
   
-  InfectedCells <- Cells_empty 
+  InfectedCells <- Cells_empty #Matrix of the N cells, each of them is going to be randomly infected by viruses
   
   for (gen in 0:(numGen-1)){
     
-    #create the N viruses that are going to infect the cells, starting from the observed proportion of virus
+    #create the N viruses that are going to infect the cells, starting from the observed proportion of virus 
     if (gen==0){ 
       Viruslist <- sample( colnames(Percent), MOI*N, replace=TRUE, prob=Percent)
     } else {
       Viruslist <- sample( colnames(Percent), MOI*N, replace=TRUE, prob=Percent[gen,] )
     }
     
-    #infect the N cells with the MOI*N virus, sending randomly each virus to one cell
+    #infect the N cells with the MOI*N virus. The algorithm go through the virus list, sending randomly each virus to one cell, and updating the InfectedCells matrix
     InfectedCells <- Cells_empty
-    for (virus in 1:(MOI*N)) {
-      ChooseCell  <- sample(1:N, 1)
+    for (virus in 1:(MOI*N)) {        
+      ChooseCell  <- sample(1:N, 1)   #choose a random cell
       InfectedCells[ChooseCell,Viruslist[virus]]  <- InfectedCells[ChooseCell,Viruslist[virus]] + 1
     }
     
-    #create the second generation of viruses, an average of 100 virus is created per cell
-    Virus_sg <- c()
+    #create the second generation of viruses (virus_sg), an average of 100 virus is created per cells. The algorithm goes through the matrix of cells, and compute the number and the type of new viruses produced by every cell
     for (Cell in 1:N) {
-      NumberofVirus <- sum(InfectedCells[Cell,])
-      C <- InfectedCells[Cell,]
-      P <- prop.table(C)
+      NumberofVirus <- sum(InfectedCells[Cell,])  #total number of viruses that infected the cell
+      C <- InfectedCells[Cell,]                   #table giving the number of of virus of the different type ('WT','GD','GDo','R')
+      P <- prop.table(C)                          #Proportion of the different viruses that infected that specific cell, computed from C
       if (gen==0 & NumberofVirus >0){ 
         Virus_sg <- c(Virus_sg,sample( names(C), abs(rnorm(1, mean=100, sd=30)), replace=TRUE, prob=P ))
       }
       if (NumberofVirus >0 & gen>0){
-        #if no GD virus, make new virus
+        #if no GD virus, make new WT and R viruses with no fitness cost (average 100, sd 30), with the proportions given by P
         if ( (C['GD']+C['GDo'])==0 ){ 
           Virus_sg <- c(Virus_sg,sample( names(C), abs(rnorm(1, mean=100, sd=30)), replace=TRUE, prob=P ))
         }
-        #if no WT or Res virus, make new virus with a fitness cost of f
+        #if no WT or Res virus, make new viruses with a fitness cost of f
         if ( (C['WT']+C['R'])==0 ){ 
           Virus_sg <- c(Virus_sg,sample( names(C), abs(rnorm(1, mean=f*100, sd=f*30)), replace=TRUE, prob=P ))
         }
-        #if  WT and GD virus present,WT are converted to GDo and R
+        #if  WT and GD (or GDo) viruses coinfected the cell, WT are converted to GDo and R. No fitness cost
         if ( (C['GD']+C['GDo']) > 0 & (C['WT']+C['R']) > 0){ 
           Virus_sg <- c(Virus_sg,sample( names(C), abs(rnorm(1, mean=100, sd=30)), replace=TRUE, 
                                          prob=  c(0,P['GD'],P['GDo']+(1-alpha)*P['WT'],P['R']+alpha*P['WT'])))
@@ -90,8 +89,7 @@ GeneDrive <- function(N,numGen,alpha,f,startfreq,MOI=1){
     VirusNb[gen+1,'GDo'] <- table(Virus_sg)["GDo"]
     VirusNb[gen+1,'R'] <- table(Virus_sg)["R"]
     VirusNb[is.na(VirusNb)] <- 0
-    #table(Virus_sg)
-    #print(Percent[gen+1,])
+
   }
   
   #  end_time <- Sys.time()
@@ -119,7 +117,7 @@ PlotDrive <-function(VirusNb){
   ggarrange(PlotP, PlotV, ncol=2)
 }
 
-#Generate multiple drive, return a list of dataframe, each one of them being the result of one simulation
+#Generate multiple drive simulations, return a list of dataframe, each one of them being the result of one simulation
 GenerateMultipleDrive <-function(Simul=50,N=1000,numGen=50,alpha=0.1,f=0.9,startfreq=0.05,MOI=1){
   listdf= list()
   time <-0
@@ -136,7 +134,7 @@ GenerateMultipleDrive <-function(Simul=50,N=1000,numGen=50,alpha=0.1,f=0.9,start
   return(listdf)   
 }  
 
-#Plot multiple drive
+#Plot multiple drives
 PlotMultipleDrive <-function(listdf) {
   numGen <- length(listdf[[1]][,1])
   StoreNames <- names(listdf[1])
@@ -224,7 +222,7 @@ Conditions <-list(
   c(alpha=0.1,f=0.9,startfreq=0.05,MOI=0.1)
 )
 
-
+#Run all the condition (slow)
 for (X in Conditions){
   ggsave(paste0(paste(names(X),X,sep = "",collapse="_"), ".pdf"),
          PlotMultipleDrive(do.call(GenerateMultipleDriveCl, as.list(X))), 
@@ -239,9 +237,5 @@ mclapply(X,
          mc.cores = 30)
 
 
-X <-list(
-  c(alpha=0.1,f=0.97,startfreq=0.05,MOI=1),
-  c(alpha=0.1,f=1,startfreq=0.05,MOI=1)
-)
-numCores <-25
+
 
