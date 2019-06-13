@@ -20,4 +20,4 @@ At each viral generation, NxMOI virus randomly infect N new cells
 
 After doing that for every cells at a given generation, we calculate the new global proportion of the different viruses, and use it to iter to the next generation.  
 
-The simulation in Resistant drive is the principle, except that resistant viruses grow with the same replicative fitness cost F as GD viruses
+The simulation in Resistant drive is the same principle, except that resistant viruses R grow with the same replicative fitness cost f as GD viruses.
