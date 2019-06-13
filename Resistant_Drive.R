@@ -77,20 +77,21 @@ GeneDriveRes <- function(N,numGen,alpha,f,startfreq,MOI=1){
   return(VirusNb)
 }
 
-GenerateMultipleDriveRes <-function(Simul=10,N=1000,numGen=50,alpha=0.1,f=0.9,startfreq=0.1,MOI=1){
+GenerateMultipleDriveRes <-function(Simul=50,N=1000,numGen=50,alpha=0.1,f=0.9,startfreq=0.05,MOI=1){
   listdf= list()
   time <-0
   for (i in 1:Simul){
     start_time <- Sys.time()
     listdf[[i]] <- GeneDriveRes(N=N,numGen=numGen,alpha=alpha,f=f,startfreq=startfreq,MOI=MOI)
     end_time <- Sys.time()
-    time <- time + as.numeric(end_time-start_time)
-    toaffich <-as.numeric(time/60)
-    message(cat("simulation",i,"took",toaffich,"minutes"))
+    time <- time + (end_time-start_time)
+    toaffich <- (time)
+    print(toaffich)
+    message(cat("for simulation",i))
   }
-  
+  names(listdf) <- rep(paste("Simulation=",Simul,"N=",N,", f=",f,", Startfreq=",startfreq,", alpha=",alpha,", MOI=",MOI))
   return(listdf)   
-}  
+} 
 
 Xres <-list(
   c(alpha=0.1,f=0.9,startfreq=0.05,MOI=1)
