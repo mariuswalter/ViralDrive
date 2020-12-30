@@ -1,7 +1,7 @@
 # ViralDrive
 Viral gene drive simulation
 
-This is a R program that perform simple simulations of a viral gene drive. See paper (once it is submitted).
+This is a R program that perform simple simulations of a viral gene drive. See paper (https://www.nature.com/articles/s41467-020-18678-0).
 This is really a work in progress, insuffiently commented i'm aware. So please ask questions and i'll do my best to help.
 
 In brief, the simulation works as follow.
