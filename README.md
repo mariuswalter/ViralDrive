@@ -2,8 +2,8 @@
 Viral gene drive simulation
 
 This is a R program that perform simple simulations of a viral gene drive. See papers:
-Walter and Verdin, 2020: https://www.nature.com/articles/s41467-020-18678-0).
-Walter et al., 2021: https://journals.asm.org/doi/10.1128/JVI.00802-21
+-Walter and Verdin, 2020: https://www.nature.com/articles/s41467-020-18678-0).
+-Walter et al., 2021: https://journals.asm.org/doi/10.1128/JVI.00802-21
 This is really a work in progress, insuffiently commented i'm aware. So please ask questions and i'll do my best to help.
 
 In brief, the simulation works as follow.
